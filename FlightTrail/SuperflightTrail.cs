@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SFMF;
+﻿using SFMF;
 using UnityEngine;
 
 namespace FlightTrail
@@ -11,32 +6,34 @@ namespace FlightTrail
     public class SuperflightTrail: IMod
     {
         private TrailRenderer trail;
-        private GameObject player;
         private GameObject camera;
-        private GameObject loc = new GameObject();
 
+        private int? currentSeed;
 
         void Start()
         {
-            player = LocalGameManager.Singleton.playerPrefab;
             camera = LocalGameManager.Singleton.playerCamManager.mainCamera.mainCameraReference.gameObject;
-            trail = camera.gameObject.AddComponent(typeof(TrailRenderer)) as TrailRenderer;
-            //float alpha = 1.0f;
-            //Gradient gradient = new Gradient();
-            //gradient.SetKeys(
-            //    new GradientColorKey[] { new GradientColorKey(Color.green, 0.0f), new GradientColorKey(Color.red, 1.0f) },
-            //    new GradientAlphaKey[] { new GradientAlphaKey(alpha, 0.0f), new GradientAlphaKey(alpha, 1.0f) }
-            //    );
-            //trail.colorGradient = gradient;
-            trail.startColor = new Color(1, 1, 1, 0);
-            trail.endColor = new Color(1, 1, 1, 1);
+            trail = camera.gameObject.AddComponent<TrailRenderer>();
             trail.time = Mathf.Infinity;
-            trail.startWidth = 0.5f;
+
+            var mat = new Material(Shader.Find("Diffuse"));
+
+            trail.material = mat;
+            trail.material.color = Color.red;
+
+            currentSeed = WorldManager.currentWorld.seed;
         }
 
         public void Update()
         {
-            Cursor.visible = true;
+            var isNextWorld = currentSeed != null && (currentSeed.Value != WorldManager.currentWorld.seed);
+
+            if (isNextWorld || Input.GetKeyDown(KeyCode.JoystickButton1))
+            {
+                trail.Clear();
+            }
+
+            currentSeed = WorldManager.currentWorld.seed;
         }
     }
 }
